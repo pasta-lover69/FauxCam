@@ -30,8 +30,8 @@
   function requestImageFromExtension() {
     return new Promise((resolve) => {
       const responseHandler = (event) => {
-        if (event.source !== window) return;
-        if (!event.data || event.data.type !== "FAUXCAM_IMAGE_RESPONSE") return;
+        if (event.source !== window) {return;}
+        if (!event.data || event.data.type !== "FAUXCAM_IMAGE_RESPONSE") {return;}
         window.removeEventListener("message", responseHandler);
         resolve({
           isEnabled: event.data.isEnabled,
@@ -152,7 +152,7 @@
         const audioContext = new AudioContext();
         const silentDestination = audioContext.createMediaStreamDestination();
         const silentTrack = silentDestination.stream.getAudioTracks()[0];
-        if (silentTrack) virtualStream.addTrack(silentTrack);
+        if (silentTrack) {virtualStream.addTrack(silentTrack);}
       }
 
       console.info("[FauxCam] Serving virtual camera stream from uploaded image.");
