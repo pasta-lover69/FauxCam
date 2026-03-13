@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FauxCam — Extension Test Page</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0d1b2e;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #f1f5f9;
+      letter-spacing: -0.02em;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #64748b;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    /* Test panels */
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .panel {
+      background: #0a1628;
+      border: 1px solid #1e3a5f;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      color: #64748b;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #334155;
+    }
+    .dot.green { background: #10b981; box-shadow: 0 0 6px #10b981; }
+    .dot.amber { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+    .dot.red   { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+
+    /* Video feed */
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #060e1a;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #1e3a5f;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #475569;
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-primary   { background: #f59e0b; color: #0d1b2e; }
+    .btn-secondary { background: transparent; color: #94a3b8; border: 1px solid #1e3a5f; }
+    .btn-danger    { background: transparent; color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+
+    /* Status log */
+    .log {
+      background: #060e1a;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: monospace;
+      font-size: 11px;
+      line-height: 1.7;
+      max-height: 140px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .log-entry { display: flex; gap: 8px; }
+    .log-time  { color: #334155; flex-shrink: 0; }
+    .log-ok    { color: #10b981; }
+    .log-warn  { color: #f59e0b; }
+    .log-err   { color: #ef4444; }
+    .log-info  { color: #64748b; }
+
+    /* Stream info table */
+    .info-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .info-table td { padding: 5px 0; vertical-align: top; }
+    .info-table td:first-child { color: #64748b; width: 48%; font-family: monospace; font-size: 11px; }
+    .info-table td:last-child  { color: #e2e8f0; font-family: monospace; font-size: 11px; }
+    .info-table tr + tr td    { border-top: 1px solid #0f1f36; }
+
+    /* Checklist */
+    .checklist { display: flex; flex-direction: column; gap: 8px; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 12px; color: #64748b;
+      padding: 8px 10px;
+      background: #060e1a;
+      border: 1px solid #0f1f36;
+      border-radius: 6px;
+    }
+    .check-item.pass { color: #94a3b8; border-color: rgba(16,185,129,0.2); }
+    .check-item.fail { color: #94a3b8; border-color: rgba(239,68,68,0.2); }
+    .check-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Snapshot canvas */
+    canvas { display: none; }
+
+    .snapshot-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #060e1a;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #1e3a5f;
+    }
+    #snapshot-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .snapshot-placeholder {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #334155; font-size: 12px; font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div>
+    <h1>🪪 FauxCam — Extension Test Page</h1>
+    <p class="subtitle">Simulates a real ID verification camera flow. Use this to confirm the extension is intercepting correctly.</p>
+  </div>
+
+  <div class="panel-grid">
+
+    <!-- Panel 1: Live camera feed -->
+    <div class="panel">
+      <div class="panel-title">
+        <span class="dot" id="feed-dot"></span>
+        Camera Feed
+      </div>
+
+      <div class="video-wrapper">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="video-overlay" id="video-placeholder">
+          <span>▶ Start camera to see feed</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-primary" id="start-btn" style="flex:1">Start Camera</button>
+        <button class="btn btn-danger"  id="stop-btn"  style="flex:1" disabled>Stop</button>
+      </div>
+
+      <!-- Stream metadata -->
+      <table class="info-table" id="stream-info" style="display:none">
+        <tr><td>readyState</td><td id="info-state">—</td></tr>
+        <tr><td>video tracks</td><td id="info-tracks">—</td></tr>
+        <tr><td>resolution</td><td id="info-res">—</td></tr>
+        <tr><td>label</td><td id="info-label">—</td></tr>
+        <tr><td>kind</td><td id="info-kind">—</td></tr>
+      </table>
+    </div>
+
+    <!-- Panel 2: Snapshot test -->
+    <div class="panel">
+      <div class="panel-title">
+        <span class="dot amber"></span>
+        Snapshot Capture
+      </div>
+      <p style="font-size:12px; color:#64748b; line-height:1.6">
+        Simulates what real ID verification sites do — captures a frame from the
+        video stream. If FauxCam is working, this snapshot will show your uploaded image.
+      </p>
+
+      <div class="snapshot-wrapper">
+        <img id="snapshot-img" alt="snapshot" style="display:none" />
+        <div class="snapshot-placeholder" id="snap-placeholder">No snapshot yet</div>
+      </div>
+
+      <canvas id="snap-canvas"></canvas>
+      <button class="btn btn-primary" id="snap-btn" disabled>📸 Capture Frame</button>
+    </div>
+
+    <!-- Panel 3: Auto checklist -->
+    <div class="panel">
+      <div class="panel-title">
+        <span class="dot green"></span>
+        Verification Checklist
+      </div>
+      <div class="checklist" id="checklist">
+        <div class="check-item" id="chk-intercept">
+          <span class="check-icon">⬜</span>
+          <span>getUserMedia intercepted by extension</span>
+        </div>
+        <div class="check-item" id="chk-stream">
+          <span class="check-icon">⬜</span>
+          <span>MediaStream returned successfully</span>
+        </div>
+        <div class="check-item" id="chk-track">
+          <span class="check-icon">⬜</span>
+          <span>VideoTrack is live (readyState: "live")</span>
+        </div>
+        <div class="check-item" id="chk-canvas">
+          <span class="check-icon">⬜</span>
+          <span>Stream source is a canvas (FauxCam)</span>
+        </div>
+        <div class="check-item" id="chk-snapshot">
+          <span class="check-icon">⬜</span>
+          <span>Snapshot capture produces a frame</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 4: Event log -->
+    <div class="panel">
+      <div class="panel-title">
+        <span class="dot amber"></span>
+        Event Log
+      </div>
+      <div class="log" id="log">
+        <div class="log-entry">
+          <span class="log-time">00:00</span>
+          <span class="log-info">Test page loaded. Click "Start Camera" to begin.</span>
+        </div>
+      </div>
+      <button class="btn btn-secondary" id="clear-log-btn">Clear log</button>
+    </div>
+
+  </div>
+
+  <script>
+    // ── DOM refs ──────────────────────────────────────────────────────────────
+    const video         = document.getElementById('video');
+    const startBtn      = document.getElementById('start-btn');
+    const stopBtn       = document.getElementById('stop-btn');
+    const snapBtn       = document.getElementById('snap-btn');
+    const snapCanvas    = document.getElementById('snap-canvas');
+    const snapshotImg   = document.getElementById('snapshot-img');
+    const snapPlaceholder = document.getElementById('snap-placeholder');
+    const feedDot       = document.getElementById('feed-dot');
+    const videoPlaceholder = document.getElementById('video-placeholder');
+    const streamInfoTable  = document.getElementById('stream-info');
+    const clearLogBtn   = document.getElementById('clear-log-btn');
+
+    let activeStream = null;
+    const startTime  = Date.now();
+
+    // ── Logging ───────────────────────────────────────────────────────────────
+
+    function log(message, level = 'info') {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1).padStart(5, '0');
+      const entry   = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="log-time">${elapsed}s</span><span class="log-${level}">${message}</span>`;
+      const logEl = document.getElementById('log');
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    clearLogBtn.addEventListener('click', () => {
+      document.getElementById('log').innerHTML = '';
+    });
+
+    // ── Checklist helpers ─────────────────────────────────────────────────────
+
+    function passCheck(id, note = '') {
+      const el = document.getElementById(id);
+      el.classList.add('pass');
+      el.querySelector('.check-icon').textContent = '✅';
+      if (note) el.querySelector('span:last-child').textContent += ` — ${note}`;
+    }
+
+    function failCheck(id, note = '') {
+      const el = document.getElementById(id);
+      el.classList.add('fail');
+      el.querySelector('.check-icon').textContent = '❌';
+      if (note) el.querySelector('span:last-child').textContent += ` — ${note}`;
+    }
+
+    function resetChecks() {
+      ['chk-intercept','chk-stream','chk-track','chk-canvas','chk-snapshot'].forEach(id => {
+        const el = document.getElementById(id);
+        el.className = 'check-item';
+        el.querySelector('.check-icon').textContent = '⬜';
+        // Restore original text
+        const texts = {
+          'chk-intercept': 'getUserMedia intercepted by extension',
+          'chk-stream':    'MediaStream returned successfully',
+          'chk-track':     'VideoTrack is live (readyState: "live")',
+          'chk-canvas':    'Stream source is a canvas (FauxCam)',
+          'chk-snapshot':  'Snapshot capture produces a frame',
+        };
+        el.querySelector('span:last-child').textContent = texts[id];
+      });
+    }
+
+    // ── Detect if stream came from a canvas ───────────────────────────────────
+    // Canvas-based streams have no deviceId and their track label is typically
+    // empty or set to "MediaStreamTrack". Real webcams always report a label
+    // like "FaceTime HD Camera" or "USB Camera".
+
+    function detectCanvasStream(track) {
+      const label = track.label || '';
+      const settings = track.getSettings?.() ?? {};
+
+      // Canvas streams: empty label OR deviceId is absent/empty
+      const isCanvas = label === '' || !settings.deviceId;
+      return isCanvas;
+    }
+
+    // ── Update stream info table ──────────────────────────────────────────────
+
+    function populateStreamInfo(stream) {
+      const track    = stream.getVideoTracks()[0];
+      const settings = track?.getSettings?.() ?? {};
+
+      document.getElementById('info-state').textContent  = track?.readyState ?? '—';
+      document.getElementById('info-tracks').textContent = stream.getVideoTracks().length;
+      document.getElementById('info-res').textContent    =
+        settings.width && settings.height
+          ? `${settings.width} × ${settings.height}`
+          : `${video.videoWidth} × ${video.videoHeight}`;
+      document.getElementById('info-label').textContent  = track?.label || '(empty — canvas stream)';
+      document.getElementById('info-kind').textContent   = track?.kind ?? '—';
+
+      streamInfoTable.style.display = 'table';
+    }
+
+    // ── Main camera start ─────────────────────────────────────────────────────
+
+    startBtn.addEventListener('click', async () => {
+      startBtn.disabled = true;
+      resetChecks();
+      log('Calling getUserMedia({ video: true, audio: false })…', 'info');
+
+      // Check 1 — did something intercept the call?
+      // We monkey-patch getUserMedia briefly just to detect interception.
+      const originalFn = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      let wasIntercepted = false;
+
+      navigator.mediaDevices.getUserMedia = async function detectionWrapper(constraints) {
+        wasIntercepted = true; // any override (including our own) counts
+        return originalFn(constraints);
+      };
+
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+
+        // Restore (the real inject.js override is still underneath)
+        navigator.mediaDevices.getUserMedia = originalFn;
+
+        if (wasIntercepted) {
+          passCheck('chk-intercept', 'call was intercepted');
+          log('getUserMedia was intercepted ✓', 'ok');
+        } else {
+          failCheck('chk-intercept', 'no interception detected');
+          log('getUserMedia was NOT intercepted — is the extension enabled?', 'warn');
+        }
+
+        // Check 2 — got a stream
+        passCheck('chk-stream');
+        log(`MediaStream received — id: ${stream.id.slice(0, 12)}…`, 'ok');
+
+        activeStream = stream;
+        video.srcObject = stream;
+        videoPlaceholder.style.display = 'none';
+        feedDot.className = 'dot green';
+        stopBtn.disabled  = false;
+        snapBtn.disabled  = false;
+
+        await video.play();
+        populateStreamInfo(stream);
+
+        // Check 3 — track readyState
+        const track = stream.getVideoTracks()[0];
+        if (track?.readyState === 'live') {
+          passCheck('chk-track', `readyState: ${track.readyState}`);
+          log(`VideoTrack readyState: "${track.readyState}" ✓`, 'ok');
+        } else {
+          failCheck('chk-track', `readyState: ${track?.readyState}`);
+          log(`VideoTrack readyState: "${track?.readyState}" — unexpected`, 'warn');
+        }
+
+        // Check 4 — is it a canvas stream?
+        if (detectCanvasStream(track)) {
+          passCheck('chk-canvas', 'no deviceId, no label → canvas source');
+          log('Stream identified as canvas-based — FauxCam is active ✓', 'ok');
+        } else {
+          failCheck('chk-canvas', `label: "${track?.label}" — looks like a real webcam`);
+          log(`Stream label: "${track?.label}" — this appears to be a REAL camera feed.`, 'warn');
+          log('→ Make sure the extension toggle is ON and the tab was reloaded.', 'warn');
+        }
+
+      } catch (error) {
+        navigator.mediaDevices.getUserMedia = originalFn;
+        failCheck('chk-stream', error.message);
+        log(`getUserMedia failed: ${error.name} — ${error.message}`, 'err');
+        log('→ Grant camera permission and try again.', 'info');
+        startBtn.disabled = false;
+      }
+    });
+
+    // ── Stop stream ───────────────────────────────────────────────────────────
+
+    stopBtn.addEventListener('click', () => {
+      if (activeStream) {
+        activeStream.getTracks().forEach(t => t.stop());
+        activeStream = null;
+      }
+      video.srcObject = null;
+      videoPlaceholder.style.display = 'flex';
+      feedDot.className = 'dot';
+      stopBtn.disabled  = true;
+      snapBtn.disabled  = true;
+      streamInfoTable.style.display = 'none';
+      startBtn.disabled = false;
+      log('Stream stopped.', 'info');
+    });
+
+    // ── Snapshot capture ─────────────────────────────────────────────────────
+
+    snapBtn.addEventListener('click', () => {
+      if (!activeStream) return;
+
+      const width  = video.videoWidth  || 1280;
+      const height = video.videoHeight || 720;
+
+      snapCanvas.width  = width;
+      snapCanvas.height = height;
+
+      const ctx = snapCanvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+
+      const dataUrl = snapCanvas.toDataURL('image/jpeg', 0.92);
+
+      snapshotImg.src = dataUrl;
+      snapshotImg.style.display = 'block';
+      snapPlaceholder.style.display = 'none';
+
+      passCheck('chk-snapshot', `${width}×${height}px frame captured`);
+      log(`Snapshot captured at ${width}×${height}px ✓`, 'ok');
+      log('→ Check the snapshot panel — does it show your uploaded ID image?', 'info');
+    });
+  </script>
+</body>
+</html>
