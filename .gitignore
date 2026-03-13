@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+
+# Environment — never commit secrets
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build / packaging
+*.zip
+*.crx
+*.pem
+dist/
