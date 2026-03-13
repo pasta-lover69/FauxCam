@@ -1,0 +1,25 @@
+{
+  "name": "fauxcam",
+  "version": "1.0.0",
+  "description": "Chrome extension that replaces getUserMedia camera capture with a static uploaded image.",
+  "private": true,
+  "scripts": {
+    "lint": "eslint content.js inject.js popup.js",
+    "lint:fix": "eslint content.js inject.js popup.js --fix",
+    "validate": "node scripts/validate-manifest.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "chrome-extension",
+    "getUserMedia",
+    "virtual-camera",
+    "identity-verification",
+    "webrtc"
+  ],
+  "license": "MIT"
+}
