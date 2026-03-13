@@ -30,7 +30,7 @@ const statusMsg = document.getElementById("status-msg");
 function showStatus(message, isError = false) {
   statusMsg.textContent = message;
   statusMsg.className = isError ? "error" : "";
-  if (!isError) setTimeout(() => { statusMsg.textContent = ""; }, 3000);
+  if (!isError) {setTimeout(() => { statusMsg.textContent = ""; }, 3000);}
 }
 
 function updateBadge(isEnabled) {
@@ -104,12 +104,12 @@ dropZone.addEventListener("drop", async (event) => {
   event.preventDefault();
   dropZone.classList.remove("drag-over");
   const file = event.dataTransfer?.files[0];
-  if (file) await handleFileSelected(file);
+  if (file) {await handleFileSelected(file);}
 });
 
 fileInput.addEventListener("change", async () => {
   const file = fileInput.files[0];
-  if (file) await handleFileSelected(file);
+  if (file) {await handleFileSelected(file);}
 });
 
 removeBtn.addEventListener("click", removeImage);

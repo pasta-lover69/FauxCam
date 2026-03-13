@@ -64,7 +64,7 @@ Chrome extensions enforce isolated JavaScript worlds:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/fauxcam.git
+   git clone https://github.com/pasta-lover69/fauxcam.git
    cd fauxcam
    ```
 
@@ -156,4 +156,4 @@ Have an idea? [Start a discussion](../../issues/new?template=feature_request.md)
 
 ## License
 
-[MIT](./LICENSE) — © 2026 FauxCam Contributors
+[MIT](./LICENSE) — © 2026 FauxCam
