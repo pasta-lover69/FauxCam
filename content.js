@@ -29,8 +29,8 @@ const STORAGE_KEY_ENABLED = "fauxcam_enabled";
 
 window.addEventListener("message", async (event) => {
   // Only handle messages from the same page — ignore cross-origin frames
-  if (event.source !== window) return;
-  if (!event.data || event.data.type !== MESSAGE_REQUEST) return;
+  if (event.source !== window) {return;}
+  if (!event.data || event.data.type !== MESSAGE_REQUEST) {return;}
 
   const storage = await chrome.storage.local.get([STORAGE_KEY_IMAGE, STORAGE_KEY_ENABLED]);
   const isEnabled = storage[STORAGE_KEY_ENABLED] ?? false;
